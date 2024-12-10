@@ -3,6 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 
 import tensorflow as tf
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from data_processing import load_data, preprocess_data
 
@@ -25,6 +26,7 @@ def build_and_train_model(file_path, epochs=30, batch_size=32):
         tf.keras.layers.Dense(32, activation='relu'),
         tf.keras.layers.Dense(1, activation='linear')
     ])
+    model.summary()
     
     # Compile the model
     model.compile(
@@ -34,12 +36,41 @@ def build_and_train_model(file_path, epochs=30, batch_size=32):
     )
     
     # Train model
-    model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=epochs, batch_size=batch_size)
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=epochs, batch_size=batch_size)
+    
+    # Plot training history
+    plot_training_history(history)
     
     # Save and convert the model
     save_model(model)
     
     return model
+
+# Function to plot training history
+def plot_training_history(history):
+    plt.figure(figsize=(12, 6))
+    
+    # Plot loss
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Loss Over Epochs')
+    plt.legend()
+    
+    # Plot MAE
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['mean_absolute_error'], label='Training MAE')
+    plt.plot(history.history['val_mean_absolute_error'], label='Validation MAE')
+    plt.xlabel('Epochs')
+    plt.ylabel('Mean Absolute Error')
+    plt.title('MAE Over Epochs')
+    plt.legend()
+    
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
 
 # Function to save the model
 def save_model(model):
